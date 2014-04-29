@@ -225,10 +225,6 @@ Plugin.prototype.initRouters = function () {
   utils.objectEachKey(me.routers, function (i) {
     me.debug('register router [%s]: %s', me.name, i);
     var fn = me.routers[i];
-    //var router = express.Router();
-    //fn(ns, router, me._createDebug(i));
-    //app.use(router);
-    //ns('router.' + i, router);
     fn(ns, app, me._createDebug(i));
   });
 };
