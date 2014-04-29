@@ -6,7 +6,6 @@
 
 var path = require('path');
 var crypto = require('crypto');
-var xss = require('xss');
 var utils = module.exports;
 
 
@@ -97,37 +96,4 @@ utils.randomString = function (size) {
 
 utils.cloneObject = function (obj) {
   return JSON.parse(JSON.stringify(obj));
-};
-
-utils.parseQueryBool = function (str, b) {
-  str = String(str);
-  if (str === '1' || str === 'true' || str === 'yes' || str === 'on') {
-    return true;
-  } else if (str === '0' || str === 'false' || str === 'no' || str === 'off') {
-    return false;
-  } else {
-    return b;
-  }
-};
-
-var whiteList = utils.cloneObject(xss.whiteList);
-(function () {
-  whiteList.strike = [];
-})();
-var defaultXss = new xss.FilterXSS({
-  stripIgnoreTag:     true,
-  stripIgnoreTagBody: ['script'],
-  whiteList:          whiteList
-});
-utils.xss = function (html) {
-  return defaultXss.process(html);
-};
-
-var xssStripHtml = new xss.FilterXSS({
-  whiteList:          [],
-  stripIgnoreTag:     true,
-  stripIgnoreTagBody: ['script']
-});
-utils.stripHtml = function (html) {
-  return xssStripHtml.process(html);
 };
