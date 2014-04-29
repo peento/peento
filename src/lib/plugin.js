@@ -32,7 +32,8 @@ function Plugin (name, ns, dir) {
 
 /******************************************************************************/
 
-Plugin.prototype.load = function () {
+Plugin.prototype.load = function (dir) {
+  this.dir = dir || this.dir;
   this.loadHooks();
   this.loadFilters();
   this.loadModels();

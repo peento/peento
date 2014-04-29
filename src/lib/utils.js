@@ -97,3 +97,16 @@ utils.randomString = function (size) {
 utils.cloneObject = function (obj) {
   return JSON.parse(JSON.stringify(obj));
 };
+
+utils.merge = function (a, b) {
+  var c = {};
+  a = utils.cloneObject(a);
+  b = utils.cloneObject(b);
+  utils.objectEachKey(a, function (k) {
+    c[k] = a[k];
+  });
+  utils.objectEachKey(b, function (k) {
+    c[k] = b[k];
+  });
+  return c;
+};

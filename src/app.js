@@ -22,19 +22,28 @@ var MySQLModel = require('lei-mysql-model');
 var Pipe = require('lei-pipe');
 var errorhandler = require('./middleware/errorhandler');
 var assetsMiddleware = require('./middleware/assets');
+var csrfMiddleware = require('./middleware/csrf');
+var multipartyMiddleware = require('./middleware/multiparty');
 var utils = require('./lib/utils');
 var Plugin = require('./lib/plugin');
 var createDebug = require('./lib/debug');
+var defaultConfig = require('./lib/default_config');
 var debug = require('./lib/debug')('app');
 
+
+function warning (str) {
+  console.error('Warning: ' + str);
+}
 
 module.exports = function (config) {
   return new PeentoApplication(config);
 };
 
-
 function PeentoApplication (config) {
   debug('new');
+
+  // fill default config
+  config = utils.merge(defaultConfig, config || {});
 
   // init global namespace
   var ns = this.ns = createNamespace();
@@ -42,21 +51,22 @@ function PeentoApplication (config) {
   ns('config', config);
   ns('utils', utils);
   ns('debug', createDebug);
+  ns('middleware.csrf', csrfMiddleware(ns, debug));
+  ns('middleware.multiparty', multipartyMiddleware(ns, debug));
 
   // init express
   var app = this.express = express();
   app.use(morgan());
   app.use(bodyParser());
   app.use(express.query());
-  app.use(cookieParser('optional secret string'));
+  app.use(cookieParser(config.cookie.secret));
   app.use(session({
-    keys: ['optional secret string']
+    keys: [config.session.secret]
   }));
   app.use('/assets', assetsMiddleware(ns));
-  app.use(timeout(30000));
+  app.use(timeout(config.request.timeout));
 
   this._initTpl();
-  this._useDefaultPlugin();
 }
 
 PeentoApplication.prototype.listen = function (port) {
@@ -75,38 +85,39 @@ PeentoApplication.prototype.start = function () {
 
 /******************************************************************************/
 
-PeentoApplication.prototype._usePluginFromDir = function (name, dir) {
+PeentoApplication.prototype._usePlugin = function (name, fn) {
   var ns = this.ns;
-  var plugin = new Plugin(name, ns, dir);
+  var plugin = new Plugin(name, ns);
   ns('plugin.' + name, plugin);
-  require(plugin.dir)(ns, plugin, plugin.debug);
+  fn(ns, plugin, plugin.debug);
 
   if (!Array.isArray(this._plugins)) this._plugins = [];
   this._plugins.push(plugin);
 }
 
-PeentoApplication.prototype._useDefaultPlugin = function () {
-  this._usePluginFromDir('default', path.resolve(__dirname, 'default'));
-};
-
-PeentoApplication.prototype.usePlugin = function (name) {
+PeentoApplication.prototype.use = function (name) {
   var errs = [];
-  var m, f;
+  var m;
 
-  // try to load from working path: ./plugin/name
-  try {
-    f = path.resolve('plugin', name);
-    m = require(f);
-  } catch (err) {
-    errs.push(err);
+  if (typeof name === 'function') {
+    m = name;
+    name = utils.randomString(8);
   }
 
-  // try to load from package
+  // try to load from working path: ./name
   if (!m) {
     try {
-      var n = 'peento-plugin-' + name;
+      m = require(path.resolve(name));
+    } catch (err) {
+      errs.push(err);
+    }
+  }
+
+  // try to load from package "peento-xxx"
+  if (!m) {
+    try {
+      var n = 'peento-' + name;
       m = require(n);
-      f = path.dirname(require.resolve(n));
     } catch (err) {
       errs.push(err);
     }
@@ -116,14 +127,18 @@ PeentoApplication.prototype.usePlugin = function (name) {
     throw new Error('Plugin ' + name + ' not found');
   }
 
-  this._usePluginFromDir(name, f);
+  this._usePlugin(name, m);
 };
 
 PeentoApplication.prototype._initPlugins = function () {
   debug('_initPlugins');
-  this._plugins.forEach(function (plugin) {
-    plugin.init();
-  });
+  if (Array.isArray(this._plugins)) {
+    this._plugins.forEach(function (plugin) {
+      plugin.init();
+    });
+  } else {
+    warning('no plugin was loaded.');
+  }
 };
 
 /******************************************************************************/
