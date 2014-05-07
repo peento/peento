@@ -160,11 +160,14 @@ PeentoApplication.prototype._initTpl = function () {
 
   var baseContext = this.context = expressLiquid.newContext();
   var renderLiquid = this.renderLiquid = expressLiquid({
-    context:     baseContext,
+    context: baseContext,
     resolveFilename: function (name, settings) {
-      var views = ns('view');
       var ext = path.extname(name);
       if (!ext) name += '.liquid';
+      return name;
+    },
+    includeFile: function (name, callback) {
+      var views = ns('view');
       if (name[0] === '/') name = name.slice(1);
       var f = views[name];
       // if is debug mode, try to lookup from view paths
@@ -174,8 +177,14 @@ PeentoApplication.prototype._initTpl = function () {
       // view not found
       if (!f) f = views['view_not_found.liquid'];
       debug('resolve view: [%s] %s', name, f);
-      return f;
-    }
+
+      // read file
+      fs.readFile(f, {encoding: 'utf8'}, function (err, tpl) {
+        if (err) return callback(err);
+        callback(null, '{% assign _view_name="' + name.slice(0, -7) + '" %}' + tpl)
+      });
+    },
+    traceError: me._is_debug
   });
 
   app.use(function (req, res, next) {
@@ -185,7 +194,6 @@ PeentoApplication.prototype._initTpl = function () {
     res.render = function (tpl) {
       debug('render: %s', tpl);
 
-      res.setLocals('_view_name', tpl);
       res.context.setLocals('_server', {
         query:  req.query,
         body:   req.body,
@@ -195,9 +203,9 @@ PeentoApplication.prototype._initTpl = function () {
       res.context.setLocals('_config', ns('config'));
 
       renderLiquid(tpl, {
-        context: res.context,
-        cache:   true,
-        settings: {}
+        context:    res.context,
+        cache:      !me._is_debug,
+        settings:   {}
       }, function (err, html) {
         if (err) return next(err);
         res.header('content-type', 'text/html');
