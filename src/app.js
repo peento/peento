@@ -20,6 +20,7 @@ var createNamespace = require('lei-ns').Namespace;
 var MySQLPool = require('lei-mysql');
 var MySQLModel = require('lei-mysql-model');
 var Pipe = require('lei-pipe');
+var FileLookup = require('file-lookup');
 var errorhandler = require('./middleware/errorhandler');
 var assetsMiddleware = require('./middleware/assets');
 var csrfMiddleware = require('./middleware/csrf');
@@ -53,6 +54,11 @@ function PeentoApplication (config) {
   ns('debug', createDebug);
   ns('middleware.csrf', csrfMiddleware(ns, debug));
   ns('middleware.multiparty', multipartyMiddleware(ns, debug));
+  this._is_debug = !!config.debug;
+  this._fileLookup = {
+    view:  new FileLookup(),
+    asset: new FileLookup()
+  };
 
   // init express
   var app = this.express = express();
@@ -93,6 +99,9 @@ PeentoApplication.prototype._usePlugin = function (name, fn) {
 
   if (!Array.isArray(this._plugins)) this._plugins = [];
   this._plugins.push(plugin);
+
+  this._fileLookup.asset.add(path.resolve(plugin.dir, 'asset'));
+  this._fileLookup.view.add(path.resolve(plugin.dir, 'view'));
 }
 
 PeentoApplication.prototype.use = function (name) {
@@ -145,6 +154,7 @@ PeentoApplication.prototype._initPlugins = function () {
 
 PeentoApplication.prototype._initTpl = function () {
   debug('_initTpl');
+  var me = this;
   var ns = this.ns;
   var app = this.express;
 
@@ -157,6 +167,11 @@ PeentoApplication.prototype._initTpl = function () {
       if (!ext) name += '.liquid';
       if (name[0] === '/') name = name.slice(1);
       var f = views[name];
+      // if is debug mode, try to lookup from view paths
+      if (!f && me._is_debug) {
+        f = me._fileLookup.view.resolveSync(name);
+      }
+      // view not found
       if (!f) f = views['view_not_found.liquid'];
       debug('resolve view: [%s] %s', name, f);
       return f;

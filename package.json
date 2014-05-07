@@ -37,6 +37,7 @@
     "lei-mysql": "^0.1.6",
     "lei-mysql-model": "^0.1.1",
     "lei-pipe": "0.0.1",
-    "async": "~0.7.0"
+    "async": "~0.7.0",
+    "file-lookup": "0.0.2"
   }
 }
