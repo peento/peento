@@ -31,7 +31,7 @@
     "connect-timeout": "^1.0.0",
     "connect-multiparty": "^1.0.3",
     "express-liquid": "^0.2.4",
-    "tinyliquid": "^0.2.17",
+    "tinyliquid": "~0.2.18",
     "rd": "0.0.2",
     "lei-ns": "^0.1.2",
     "lei-mysql": "^0.1.6",
