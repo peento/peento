@@ -1,7 +1,7 @@
 {
   "name": "peento",
-  "version": "0.0.0",
-  "description": "A simple multi-user blog system",
+  "version": "0.0.1",
+  "description": "The peento framework",
   "main": "src/app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
