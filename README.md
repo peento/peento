@@ -16,14 +16,14 @@ var peento = require('peento');
 // 创建应用
 var app = peento();
 
-// 载入配置
+// 载入配置 参考文件src/lib/default_config.js
 app.config(require('./config'));
 
 // 载入插件
 app.use('xxxx');
 
-// 监听端口
-app.listen(80);
+// 启动服务器
+app.start();
 ```
 
 **详细使用说明请阅读 [Wiki](https://github.com/peento/peento/wiki)**
