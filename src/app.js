@@ -6,6 +6,8 @@
 
 var fs = require('fs');
 var path = require('path');
+var events = require('events');
+var util = require('util');
 var async = require('async');
 var express = require('express');
 var bodyParser = require('body-parser');
@@ -74,6 +76,7 @@ function PeentoApplication (config) {
 
   this._initTpl();
 }
+util.inherits(PeentoApplication, events.EventEmitter);
 
 PeentoApplication.prototype.listen = function (port) {
   debug('listen %s', port);
