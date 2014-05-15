@@ -203,6 +203,7 @@ PeentoApplication.prototype._initTpl = function () {
         query:  req.query,
         body:   req.body,
         params: req.params,
+        headers: req.headers,
         session: req.session
       });
       res.context.setLocals('_config', ns('config'));
