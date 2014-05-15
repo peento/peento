@@ -90,6 +90,7 @@ PeentoApplication.prototype.start = function () {
   this._initFilters();
   this.express.use(errorhandler());
   this.listen(this.ns('config.port'));
+  this.emit('start');
 };
 
 /******************************************************************************/
