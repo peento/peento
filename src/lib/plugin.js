@@ -6,6 +6,8 @@
 
 var path = require('path');
 var fs = require('fs');
+var events = require('events');
+var util = require('util');
 var rd = require('rd');
 var express = require('express');
 var MySQLModel = require('lei-mysql-model');
@@ -29,6 +31,7 @@ function Plugin (name, ns, dir) {
   this.views = {};
   this.debug = createDebug('plugin:' + name);
 }
+util.inherits(Plugin, events.EventEmitter);
 
 /******************************************************************************/
 
