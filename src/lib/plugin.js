@@ -23,6 +23,7 @@ function Plugin (name, ns, dir) {
   this.dir = dir;
   this.hooks = {};
   this.filters = {};
+  this.locals = {};
   this.models = {};
   this.calls = {};
   this.routers = {};
@@ -39,6 +40,7 @@ Plugin.prototype.load = function (dir) {
   this.dir = dir || this.dir;
   this.loadHooks();
   this.loadFilters();
+  this.loadLocals();
   this.loadModels();
   this.loadCalls();
   this.loadRouters();
@@ -96,6 +98,15 @@ Plugin.prototype.loadFilters = function () {
     filters[n] = m;
   });
 };
+
+Plugin.prototype.loadLocals = function () {
+  this.debug('loadLocals');
+  var locals = this.locals;
+  this._dirLoadEachJsFile('locals', function (f, n, m) {
+    locals[n] = m;
+  });
+};
+
 
 Plugin.prototype.loadModels = function () {
   this.debug('loadModels');
@@ -155,6 +166,7 @@ Plugin.prototype._createDebug = function (name) {
 Plugin.prototype.init = function () {
   this.initHooks();
   this.initFilters();
+  this.initLocals();
   this.initModels();
   this.initCalls();
   this.initMiddlewares();
@@ -193,6 +205,20 @@ Plugin.prototype.initFilters = function () {
     fn(ns, function registerFilter (n, fn) {
       me.debug('register filter [%s.%s]: %s', me.name, i, n);
       ns('filter.' + n, fn);
+    }, me._createDebug(i));
+  });
+};
+
+Plugin.prototype.initLocals = function () {
+  var me = this;
+  var ns = me.ns;
+  var app = ns('app');
+
+  utils.objectEachKey(me.locals, function (i, fn) {
+    var fn = me.locals[i];
+    fn(ns, function registerLocals (n, fn) {
+      me.debug('register local [%s.%s]: %s', me.name, i, n);
+      ns('locals.' + n, {p: n, fn: fn});
     }, me._createDebug(i));
   });
 };

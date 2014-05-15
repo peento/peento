@@ -88,6 +88,7 @@ PeentoApplication.prototype.start = function () {
   this._initDb();
   this._initPlugins();
   this._initFilters();
+  this._initLocals();
   this.express.use(errorhandler());
   this.listen(this.ns('config.port'));
   this.emit('start');
@@ -236,6 +237,17 @@ PeentoApplication.prototype._initFilters = function () {
     } else {
       baseContext.setFilter(i, filters[i]);
     }
+  }
+};
+
+PeentoApplication.prototype._initLocals = function () {
+  debug('_initLocals');
+  var ns = this.ns;
+  var baseContext = this.context;
+  var locals = ns('locals');
+  for (var i in locals) {
+    var item = locals[i];
+    baseContext.setAsyncLocals(item.p, item.fn);
   }
 };
 
