@@ -28,7 +28,7 @@
     "cookie-session": "^1.0.1",
     "csurf": "^1.1.0",
     "debug": "^0.8.0",
-    "express": "^4.0.0",
+    "express": "^4.8.2",
     "express-liquid": "^0.2.4",
     "file-lookup": "0.0.2",
     "lei-mysql": "^0.1.6",
