@@ -22,6 +22,7 @@ var createNamespace = require('lei-ns').Namespace;
 var MySQLPool = require('lei-mysql');
 var MySQLModel = require('lei-mysql-model');
 var Pipe = require('lei-pipe');
+var RoutesSort = require('lei-routes-sort');
 var FileLookup = require('file-lookup');
 var errorhandler = require('./middleware/errorhandler');
 var assetsMiddleware = require('./middleware/assets');
@@ -74,6 +75,8 @@ function PeentoApplication (config) {
   app.use('/assets', assetsMiddleware(ns));
   app.use(timeout(config.request.timeout));
 
+  this.router = RoutesSort.create();
+
   this._initTpl();
 }
 util.inherits(PeentoApplication, events.EventEmitter);
@@ -89,6 +92,7 @@ PeentoApplication.prototype.start = function () {
   this._initPlugins();
   this._initFilters();
   this._initLocals();
+  this.router.register(this.express);
   this.express.use(errorhandler());
   this.listen(this.ns('config.port'));
   this.emit('start');

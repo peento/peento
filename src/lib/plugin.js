@@ -250,12 +250,13 @@ Plugin.prototype.initCalls = function () {
 Plugin.prototype.initRouters = function () {
   var me = this;
   var ns = me.ns;
-  var app = ns('app.express');
+  var app = ns('app');
+  var router = ns('app.router');
 
   utils.objectEachKey(me.routers, function (i) {
     me.debug('register router [%s]: %s', me.name, i);
     var fn = me.routers[i];
-    fn(ns, app, me._createDebug(i));
+    fn(ns, router.file(me.name + ':' + i), me._createDebug(i));
   });
 };
 
