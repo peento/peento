@@ -13,11 +13,8 @@ peento
 ```JavaScript
 var peento = require('peento');
 
-// 创建应用
-var app = peento();
-
-// 载入配置 参考文件src/lib/default_config.js
-app.config(require('./config'));
+// 创建应用，载入配置 参考文件src/lib/default_config.js
+var app = peento(require('./config'));
 
 // 载入插件
 app.use('xxxx');
