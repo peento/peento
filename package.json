@@ -1,6 +1,6 @@
 {
   "name": "peento",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "The peento framework",
   "main": "src/app.js",
   "scripts": {
