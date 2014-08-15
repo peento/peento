@@ -94,11 +94,19 @@ PeentoApplication.prototype.start = function () {
   this._initLocals();
   this.router.register(this.express);
   this.express.use(errorhandler());
+  this._loadDefaultViews();
   this.listen(this.ns('config.port'));
   this.emit('start');
 };
 
 /******************************************************************************/
+
+PeentoApplication.prototype._loadDefaultViews = function () {
+  var views = this.ns('view');
+  if (!views['view_not_found.liquid']) {
+    views['view_not_found.liquid'] = path.resolve(__dirname, 'view/view_not_found.liquid');
+  }
+};
 
 PeentoApplication.prototype._usePlugin = function (name, fn) {
   var ns = this.ns;
