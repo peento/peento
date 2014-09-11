@@ -34,7 +34,7 @@
     "lei-mysql": "^0.1.6",
     "lei-mysql-model": "^0.1.1",
     "lei-ns": "^0.1.2",
-    "lei-pipe": "0.0.1",
+    "lei-pipe": "0.0.2",
     "lei-routes-sort": "0.0.2",
     "morgan": "^1.0.0",
     "rd": "0.0.2",
