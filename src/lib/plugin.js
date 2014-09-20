@@ -11,6 +11,7 @@ var util = require('util');
 var rd = require('rd');
 var express = require('express');
 var MySQLModel = require('lei-mysql-model');
+var leiController = require('lei-controller');
 var utils = require('./utils');
 var createDebug = require('./debug');
 
@@ -26,6 +27,7 @@ function Plugin (name, ns, dir) {
   this.locals = {};
   this.models = {};
   this.calls = {};
+  this.controllers = {};
   this.routers = {};
   this.middlewares = {};
   this.assets = {};
@@ -43,6 +45,7 @@ Plugin.prototype.load = function (dir) {
   this.loadLocals();
   this.loadModels();
   this.loadCalls();
+  this.loadControllers();
   this.loadRouters();
   this.loadMiddlewares();
   this.loadAssets();
@@ -124,6 +127,14 @@ Plugin.prototype.loadCalls = function () {
   });
 };
 
+Plugin.prototype.loadControllers = function () {
+  this.debug('loadControllers');
+  var controllers = this.controllers;
+  this._dirLoadEachJsFile('controller', function (f, n, m) {
+    controllers[n] = m;
+  });
+};
+
 Plugin.prototype.loadRouters = function () {
   this.debug('loadRouters');
   var routers = this.routers;
@@ -172,6 +183,7 @@ Plugin.prototype.init = function () {
   this.initMiddlewares();
   this.initAssets();
   this.initViews();
+  this.initControllers();
   this.initRouters();
 };
 
@@ -244,6 +256,18 @@ Plugin.prototype.initCalls = function () {
     var fn = me.calls[i];
     var m = fn(ns, me._createDebug(i));
     ns('call.' + i, m);
+  });
+};
+
+Plugin.prototype.initControllers = function () {
+  var me = this;
+  var ns = me.ns;
+
+  utils.objectEachKey(me.controllers, function (i) {
+    me.debug('register controller [%s]: %s', me.name, i);
+    var fn = me.controllers[i];
+    var m = fn(ns, leiController.create, me._createDebug(i));
+    ns('controller.' + i, m);
   });
 };
 
