@@ -8,7 +8,11 @@ module.exports = function (ns) {
   var app = ns('app');
   return function (req, res, next) {
     var asset = ns('asset');
-    var n = req._parsedUrl.pathname.slice(8);
+
+    var pathname = req._parsedUrl.pathname;
+    if (pathname.substr(0, 8) !== '/assets/') return next();
+
+    var n = pathname.slice(8);
     var f = asset[n];
     if (f) return res.sendfile(f);
 
