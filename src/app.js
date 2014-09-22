@@ -68,8 +68,13 @@ function PeentoApplication (config) {
   this.router = RoutesSort.create();
   var me = this;
   this._registerBaseMiddlewares = [];
-  ['logger', 'body', 'query', 'cookie', 'session', 'assets', 'timeout'].forEach(function (name) {
-    me.useMiddleware(me._getDefaultMiddleware(name));
+  var BASE_MIDDLEWARES = ['logger', 'body', 'query', 'cookie', 'session', 'assets', 'timeout'];
+  BASE_MIDDLEWARES.forEach(function (name, i) {
+    me.useMiddleware({
+      name:   name,
+      before: BASE_MIDDLEWARES.slice(i + 1),
+      after:  BASE_MIDDLEWARES.slice(0, i)
+    }, me._getDefaultMiddleware(name));
   });
 }
 util.inherits(PeentoApplication, events.EventEmitter);
