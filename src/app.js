@@ -66,6 +66,7 @@ function PeentoApplication (config) {
   // init express
   var app = this.express = express();
   this.router = RoutesSort.create();
+  this._baseMiddlewares = ['logger', 'body', 'query', 'cookie', 'session', 'assets', 'timeout'];
 }
 util.inherits(PeentoApplication, events.EventEmitter);
 
@@ -269,20 +270,37 @@ PeentoApplication.prototype._initDb = function () {
 
 PeentoApplication.prototype._initBaseMiddlewares = function () {
   debug('_initBaseMiddlewares');
+  var me = this;
   var ns = this.ns;
   var app = this.express;
 
-  app.use(morgan());
-  app.use(bodyParser());
-  app.use(express.query());
-  app.use(cookieParser(ns('config.cookie.secret')));
-  app.use(session({
-    keys: [ns('config.session.secret')]
-  }));
-  app.use('/assets', assetsMiddleware(ns));
-  app.use(timeout(ns('config.request.timeout')));
+  this._baseMiddlewares.forEach(function (m) {
+    if (typeof m === 'function') {
+      app.use(m);
+    } else {
+      app.use(me._getDefaultMiddleware(m));
+    }
+  });
 
   this._initTpl();
+};
+
+/******************************************************************************/
+
+PeentoApplication.prototype._getDefaultMiddleware = function (name) {
+  name = name.toLowerCase();
+  debug('_getDefaultMiddleware: %s', name);
+  var ns = this.ns;
+  switch (name) {
+    case 'logger': return morgan();
+    case 'body': return bodyParser();
+    case 'query': return express.query();
+    case 'cookie': return cookieParser(ns('config.cookie.secret'));
+    case 'session': return session({keys: [ns('config.session.secret')]});
+    case 'assets': return assetsMiddleware(ns);
+    case 'timeout': return timeout(ns('config.request.timeout'));
+    default: throw new Error('no default middleware "' + name + '"');
+  }
 };
 
 /******************************************************************************/
