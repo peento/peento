@@ -108,8 +108,10 @@ PeentoApplication.prototype.useMiddleware = function (options, fn) {
     name: options.name,
     before: options.before,
     after:  options.after,
-    fn: function () {
+    fn: function (params, next) {
+      debug('express.use(%s)', options.name);
       app.use(options.path, fn);
+      next();
     }
   });
 };
