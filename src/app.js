@@ -65,19 +65,7 @@ function PeentoApplication (config) {
 
   // init express
   var app = this.express = express();
-  app.use(morgan());
-  app.use(bodyParser());
-  app.use(express.query());
-  app.use(cookieParser(config.cookie.secret));
-  app.use(session({
-    keys: [config.session.secret]
-  }));
-  app.use('/assets', assetsMiddleware(ns));
-  app.use(timeout(config.request.timeout));
-
   this.router = RoutesSort.create();
-
-  this._initTpl();
 }
 util.inherits(PeentoApplication, events.EventEmitter);
 
@@ -88,6 +76,7 @@ PeentoApplication.prototype.listen = function (port) {
 
 PeentoApplication.prototype.start = function () {
   debug('start');
+  this._initBaseMiddlewares();
   this._initDb();
   this._initPlugins();
   this._initFilters();
@@ -276,6 +265,24 @@ PeentoApplication.prototype._initDb = function () {
     debugSql(sql);
     next(null, sql);
   });
+};
+
+PeentoApplication.prototype._initBaseMiddlewares = function () {
+  debug('_initBaseMiddlewares');
+  var ns = this.ns;
+  var app = this.express;
+
+  app.use(morgan());
+  app.use(bodyParser());
+  app.use(express.query());
+  app.use(cookieParser(ns('config.cookie.secret')));
+  app.use(session({
+    keys: [ns('config.session.secret')]
+  }));
+  app.use('/assets', assetsMiddleware(ns));
+  app.use(timeout(ns('config.request.timeout')));
+
+  this._initTpl();
 };
 
 /******************************************************************************/
