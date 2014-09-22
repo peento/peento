@@ -214,8 +214,10 @@ Plugin.prototype.initFilters = function () {
 
   utils.objectEachKey(me.filters, function (i) {
     var fn = me.filters[i];
-    fn(ns, function registerFilter (n, fn) {
-      me.debug('register filter [%s.%s]: %s', me.name, i, n);
+    fn(ns, function registerFilter (n, fn, enableCache) {
+      enableCache = !!enableCache;
+      me.debug('register filter [%s.%s]: %s [cache=]', me.name, i, n, enableCache);
+      fn.enableCache = enableCache;
       ns('filter.' + n, fn);
     }, me._createDebug(i));
   });
