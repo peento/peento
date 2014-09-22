@@ -66,7 +66,11 @@ function PeentoApplication (config) {
   // init express
   var app = this.express = express();
   this.router = RoutesSort.create();
-  this._baseMiddlewares = ['logger', 'body', 'query', 'cookie', 'session', 'assets', 'timeout'];
+  var me = this;
+  this._registerBaseMiddlewares = [];
+  ['logger', 'body', 'query', 'cookie', 'session', 'assets', 'timeout'].forEach(function (name) {
+    me.useMiddleware(me._getDefaultMiddleware(name));
+  });
 }
 util.inherits(PeentoApplication, events.EventEmitter);
 
@@ -87,6 +91,27 @@ PeentoApplication.prototype.start = function () {
   this._loadDefaultViews();
   this.listen(this.ns('config.port'));
   this.emit('start');
+};
+
+/******************************************************************************/
+
+PeentoApplication.prototype.useMiddleware = function (options, fn) {
+  var app = this.express;
+  if (typeof options === 'function') {
+    fn = options;
+    options = {};
+  }
+  options.name = options.name || utils.randomString(10);
+  options.path = options.path || '/';
+  debug('use middleware: %s [%s] before:%s after:%s', options.path, options.name, options.before, options.after);
+  this._registerBaseMiddlewares.push({
+    name: options.name,
+    before: options.before,
+    after:  options.after,
+    fn: function () {
+      app.use(options.path, fn);
+    }
+  });
 };
 
 /******************************************************************************/
@@ -274,12 +299,15 @@ PeentoApplication.prototype._initBaseMiddlewares = function () {
   var ns = this.ns;
   var app = this.express;
 
-  this._baseMiddlewares.forEach(function (m) {
-    if (typeof m === 'function') {
-      app.use(m);
-    } else {
-      app.use(me._getDefaultMiddleware(m));
-    }
+  var p = new Pipe();
+  this._registerBaseMiddlewares.forEach(function (item) {
+    p.add(item.name, {
+      before: item.before,
+      after:  item.after
+    }, item.fn);
+  });
+  p.start({}, function (err) {
+    if (err) throw err;
   });
 
   this._initTpl();
