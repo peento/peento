@@ -114,6 +114,14 @@ PeentoApplication.prototype.useMiddleware = function (options, fn) {
   });
 };
 
+PeentoApplication.prototype.removeMiddleware = function (name) {
+  name = name.toLowerCase();
+  debug('remove middleware: %s', name);
+  this._registerBaseMiddlewares = this._registerBaseMiddlewares.filter(function (item) {
+    return (item.name !== name);
+  });
+};
+
 /******************************************************************************/
 
 PeentoApplication.prototype._loadDefaultViews = function () {
