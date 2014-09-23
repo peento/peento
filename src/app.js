@@ -23,6 +23,7 @@ var MySQLPool = require('lei-mysql');
 var MySQLModel = require('lei-mysql-model');
 var Pipe = require('lei-pipe');
 var RoutesSort = require('lei-routes-sort');
+var Controller = require('lei-controller');
 var FileLookup = require('file-lookup');
 var errorhandler = require('./middleware/errorhandler');
 var assetsMiddleware = require('./middleware/assets');
@@ -39,9 +40,14 @@ function warning (str) {
   console.error('Warning: ' + str);
 }
 
-module.exports = function (config) {
+module.exports = exports = function (config) {
   return new PeentoApplication(config);
 };
+
+exports.Model = MySQLModel;
+exports.Controller = Controller;
+
+/******************************************************************************/
 
 function PeentoApplication (config) {
   debug('new');
@@ -398,3 +404,5 @@ PeentoApplication.prototype.call = function (name, params, callback) {
     callback(err, params);
   });
 };
+
+/******************************************************************************/
