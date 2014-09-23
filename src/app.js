@@ -74,7 +74,7 @@ function PeentoApplication (config) {
   this.router = RoutesSort.create();
   var me = this;
   this._registerBaseMiddlewares = [];
-  var BASE_MIDDLEWARES = ['logger', 'body', 'query', 'cookie', 'session', 'assets', 'timeout'];
+  var BASE_MIDDLEWARES = ['logger', 'body', 'query', 'cookie', 'session', 'assets', 'timeout', 'render'];
   BASE_MIDDLEWARES.forEach(function (name, i) {
     me.useMiddleware({
       name:   name,
@@ -92,6 +92,7 @@ PeentoApplication.prototype.listen = function (port) {
 
 PeentoApplication.prototype.start = function () {
   debug('start');
+  this._initTpl();
   this._initBaseMiddlewares();
   this._initDb();
   this._initPlugins();
@@ -239,40 +240,6 @@ PeentoApplication.prototype._initTpl = function () {
     },
     traceError: me._is_debug
   });
-
-  app.use(function (req, res, next) {
-    res.context = expressLiquid.newContext();
-    res._render = res.render;
-
-    res.render = function (tpl) {
-      debug('render: %s', tpl);
-
-      res.context.setLocals('_server', {
-        query:  req.query,
-        body:   req.body,
-        params: req.params,
-        headers: req.headers,
-        session: req.session
-      });
-      res.context.setLocals('_config', ns('config'));
-
-      renderLiquid(tpl, {
-        context:    res.context,
-        cache:      !me._is_debug,
-        settings:   {}
-      }, function (err, html) {
-        if (err) return next(err);
-        res.header('content-type', 'text/html');
-        res.end(html);
-      });
-    };
-
-    res.setLocals = function (n, v) {
-      return res.context.setLocals(n, v);
-    };
-
-    next();
-  });
 };
 
 PeentoApplication.prototype._initFilters = function () {
@@ -330,8 +297,6 @@ PeentoApplication.prototype._initBaseMiddlewares = function () {
   p.start({}, function (err) {
     if (err) throw err;
   });
-
-  this._initTpl();
 };
 
 /******************************************************************************/
@@ -348,8 +313,49 @@ PeentoApplication.prototype._getDefaultMiddleware = function (name) {
     case 'session': return session({keys: [ns('config.session.secret')]});
     case 'assets': return assetsMiddleware(ns);
     case 'timeout': return timeout(ns('config.request.timeout'));
+    case 'render': return this._getDefaultRenderMiddleware();
     default: throw new Error('no default middleware "' + name + '"');
   }
+};
+
+PeentoApplication.prototype._getDefaultRenderMiddleware = function () {
+  var me = this;
+  var ns = this.ns;
+
+  return function (req, res, next) {
+    res.context = expressLiquid.newContext();
+    res._render = res.render;
+
+    res.render = function (tpl) {
+      debug('render: %s', tpl);
+
+      res.context.setLocals('_server', {
+        url:    req.url,
+        query:  req.query,
+        body:   req.body,
+        params: req.params,
+        headers: req.headers,
+        session: req.session
+      });
+      res.context.setLocals('_config', ns('config'));
+
+      me.renderLiquid(tpl, {
+        context:    res.context,
+        cache:      !me._is_debug,
+        settings:   {}
+      }, function (err, html) {
+        if (err) return next(err);
+        res.header('content-type', 'text/html');
+        res.end(html);
+      });
+    };
+
+    res.setLocals = function (n, v) {
+      return res.context.setLocals(n, v);
+    };
+
+    next();
+  };
 };
 
 /******************************************************************************/
