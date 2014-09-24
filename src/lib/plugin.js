@@ -268,7 +268,11 @@ Plugin.prototype.initControllers = function () {
   utils.objectEachKey(me.controllers, function (i) {
     me.debug('register controller [%s]: %s', me.name, i);
     var fn = me.controllers[i];
-    var m = fn(ns, leiController.create, me._createDebug(i));
+    var m = fn(ns, function (options) {
+      options = options || {};
+      options.name = options.name || i;
+      return leiController.create(options);
+    }, me._createDebug(i));
     ns('controller.' + i, m);
   });
 };
