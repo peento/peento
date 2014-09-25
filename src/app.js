@@ -372,6 +372,7 @@ PeentoApplication.prototype.call = function (name, params, callback) {
 
   var call = ns('call.' + name);
   if (typeof call !== 'function') {
+    debug('call: no method %s', name);
     return callback(new TypeError('Cannot call ' + name));
   }
 
@@ -407,6 +408,7 @@ PeentoApplication.prototype.call = function (name, params, callback) {
     }
 
   ], function (err) {
+    if (err) debug('call error: %s', err);
     callback(err, params);
   });
 };
