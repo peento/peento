@@ -32,7 +32,7 @@
     "express-liquid": "^0.2.4",
     "file-lookup": "0.0.2",
     "lei-mysql": "^0.1.6",
-    "lei-mysql-model": "^0.1.1",
+    "lei-mysql-model": "^0.1.2",
     "lei-ns": "^0.1.2",
     "lei-pipe": "0.0.2",
     "lei-routes-sort": "0.0.2",
