@@ -36,6 +36,7 @@
     "lei-ns": "^0.1.2",
     "lei-pipe": "0.0.2",
     "lei-routes-sort": "0.0.2",
+    "lei-controller": "0.0.1",
     "morgan": "^1.0.0",
     "rd": "0.0.2",
     "serve-static": "^1.0.4",
