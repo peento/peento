@@ -270,15 +270,21 @@ PeentoApplication.prototype._initLocals = function () {
 PeentoApplication.prototype._initDb = function () {
   debug('_initDb');
   var ns = this.ns;
-  var db = new MySQLPool(ns('config.mysql'));
-  this.db = db;
-  ns('db', db);
+  var mysqlConfig = ns('config.mysql');
+  if(mysqlConfig){
+    var db = new MySQLPool(ns('config.mysql'));
+    this.db = db;
+    ns('db', db);
 
-  var debugSql = createDebug('db:query');
-  db.use('sql', function (sql, next) {
-    debugSql(sql);
-    next(null, sql);
-  });
+    var debugSql = createDebug('db:query');
+    db.use('sql', function (sql, next) {
+      debugSql(sql);
+      next(null, sql);
+    });
+  }else{
+    this.db = null;
+    ns('db', this.db);
+  }
 };
 
 PeentoApplication.prototype._initBaseMiddlewares = function () {
